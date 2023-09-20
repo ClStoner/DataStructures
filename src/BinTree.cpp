@@ -176,11 +176,59 @@ void ReverseBinTree(BinTree& T) {
     ReverseBinTree(T->rchild);
     swap(T->lchild, T->rchild);
 }
+/// 二叉树T寻找节点p、q的最近公共祖先
+BinNode* FindLeastCommonAncestor(const BinTree& T, const BinNode* p, const BinNode* q) {
+    if(T == nullptr) return nullptr;
+    if(T->data == p->data || T->data == q->data) return T;
+    BinNode* lnode = FindLeastCommonAncestor(T->lchild, p, q);
+    BinNode* rnode = FindLeastCommonAncestor(T->rchild, p, q);
+    if(lnode && rnode) return T;
+    if(lnode && rnode == nullptr) return lnode;
+    if(lnode == nullptr && rnode) return rnode;
+    return nullptr;
+}
+/// 依据先序中序遍历顺序构建二叉树， a 先序， b 后序
+void CreatePreInOrder(BinTree& T, int* a, int * b, int n) {
+    if(n == 0) return;
+    T = new BinNode(a[0]);
+    // cout << "a0 : " << a[0] << endl;
+    if(n == 1) return;
+    int mid = 0;
+    for(int i = 0; i < n; ++ i) {
+        if(b[i] == a[0]) {
+            mid = i; break;
+        }
+    }
+    if(mid) CreatePreInOrder(T->lchild, a + 1, b, mid);
+    if(mid < n - 1) CreatePreInOrder(T->rchild, a + mid + 1, b + mid + 1, n - mid - 1);
+}
+/// 依据后续中序遍历的顺序构建二叉树, a 后序， b 中序
+void CreatePostInOrder(BinTree& T, int* a, int *b, int n) {
+    if(n == 0) return;
+    T = new BinNode(a[n - 1]);
+    if(n == 1) return;
+    int mid = 0;
+    for(int i = 0; i < n; ++ i) {
+        if(b[i] == a[n - 1]) {
+            mid = i; break;
+        }
+    }
+    if(mid) CreatePostInOrder(T->lchild, a, b, mid);
+    if(mid < n - 1) CreatePostInOrder(T->rchild, a + mid, b + mid + 1, n - mid - 1);
+}
+
+
 
 int main()
 {
     BinTree T = nullptr;
-    CreateTree(T);
+    int a[100], b[100];
+    int n;
+    cin >> n;
+    for(int i = 0; i < n; ++ i) cin >> a[i];
+    for(int i = 0; i < n; ++ i) cin >> b[i];
+    CreatePostInOrder(T, a, b, n);
+    // CreatePreInOrder(T, a, b, n);
     cout << endl;
     cout << "PreOrder Binary Tree " << endl;
     PreTraversal(T);
@@ -219,9 +267,18 @@ int main()
         cout << "NO, This isn't a Balanced Binary Tree !!" << endl << endl;
     }
 
-    ReverseBinTree(T);
-    PreTraversal(T);
-    cout <<endl << endl;
+    // ReverseBinTree(T);
+    // PreTraversal(T);
+    // cout <<endl << endl;
+    while(true) {
+        int x, y; cin >> x >> y;
+        BinNode* p = new BinNode(x);
+        BinNode* q = new BinNode(y);
+        auto lca = FindLeastCommonAncestor(T, p, q);
+        if(lca) {
+            cout << "lca : " << lca->data << endl;
+        }
+    }
     return 0;
 }
 /*
@@ -235,4 +292,12 @@ int main()
 
 1 2 3 0 0 0 5 4 0 0 0
 1 2 3 6 0 0 0 4 0 0 5 0 0 
+
+11
+前序:
+1 2 4 7 5 10 11 6 8 9 12
+中序
+7 4 2 10 5 11 1 8 6 12 9
+后续
+7 4 10 11 5 2 8 12 9 6 1
 */
