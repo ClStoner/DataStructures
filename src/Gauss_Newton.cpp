@@ -1,64 +1,87 @@
-#include <iostream>
-#include <chrono>
-#include <vector>
-#include <random>
+// #include <iostream>
+// #include <chrono>
+// #include <vector>
+// #include <random>
+// #include <cmath>
+// #include <cstring>
+// using namespace std;
+
+// /*
+// 高斯牛顿法拟合直线
+// y = a * x + b 
+// */
+
+
+
+#include <bits/stdc++.h>
 using namespace std;
 
-
-double rng(double sigma) {
-    unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-    mt19937 mt(seed);
-    normal_distribution<double> dist(0.0, sigma);
-    return dist(mt);
+vector<double> solveGN(const vector<double>& xdata, const vector<double>& ydata) {
+    int sz = xdata.size();
+    int maxIter = 10;
+    int iter = 0;
+    double init_a = 1.0, init_b = 1.0;
+    double var_a = init_a, var_b = init_b;
+    while(iter < maxIter) {
+        iter ++;
+        double H[2][2], b[2];
+        memset(H, 0, sizeof(H)); memset(b, 0, sizeof(b));
+        for(int i = 0; i < sz; ++ i) {
+            double r = ydata[i] - var_a * xdata[i] - var_b;
+            double Ja = -xdata[i], Jb = -1.0;
+            H[0][0] += Ja * Ja; H[0][1] += Ja * Jb;
+            H[1][0] += Jb * Ja; H[1][1] += Jb * Jb;
+            b[0] -= Ja * r; b[1] -= Jb * r;
+        }
+        double D = (H[0][0] * H[1][1] - H[0][1] * H[1][0]);
+        double delta_a = (b[0] * H[1][1] - H[0][1] * b[1]) / D;
+        double delta_b = (H[0][0] * b[1] - H[1][0] * b[0]) / D;
+        var_a += delta_a; var_b += delta_b;
+        if(sqrt(delta_a * delta_a + delta_b * delta_b) < 1e-6) break;
+    }
+    cout << "GaussNewton Iter : " << iter << " success!" << endl;
+    return vector<double>{var_a, var_b};
 }
-vector<double> solve(vector<vector<double>>H, vector<double> b)
-{
+vector<double> solveN(const vector<double>& xdata, const vector<double>& ydata) {
+    int sz = xdata.size();
+    int maxIter = 10;
+    int iter = 0;
+    double init_a = 1.0, init_b = 1.0;
+    double var_a = init_a, var_b = init_b;
+    while(iter < maxIter) {
+        iter ++;
+        double J[2];
+        memset(J, 0, sizeof(J));
+        for(int i = 0; i < sz; ++ i) {
+            double r = ydata[i] - var_a * xdata[i] - var_b;
+            double Ja = -xdata[i], Jb = -1.0;
+            J[0] -= Ja; J[1] -= Jb;
+        }
 
-} 
-
-// y = exp(ax + b) 
+        double delta_a = J[0];
+        double delta_b = J[1];
+        var_a += delta_a; var_b += delta_b;
+        if(sqrt(delta_a * delta_a + delta_b * delta_b) < 1e-6) break;
+    }
+    cout << "Newton Iter : " << iter << " success!" << endl;
+    return vector<double>{var_a, var_b};
+}
 int main()
 {
-    double at = 1.0, bt = 2.0;
-    double ar = 3.0, br = 4.0;
-    double sigma = 1.0;
-    int N = 100;
-    vector<int> x_data, y_data;
-    for(int i = 0; i < 100; ++ i) {
-        double x = 1.0 * i / 100;
-        x_data.push_back(x);
-        double y = exp(at * x * x + bt * x) + rng(sigma);
-        y_data.push_back(y);
+    mt19937 mt_rand(chrono::system_clock::now().time_since_epoch().count());
+    normal_distribution<double> nd(0.0, 5.0);
+    double a, b;
+    cin >> a >> b;
+    vector<double>xd, yd;
+    int n = 100;
+    for(int i = 0; i < n; ++ i) {
+        double x =  (1.0 * i) / 10;
+        double y = a * x + b + nd(mt_rand);
+        xd.push_back(x); yd.push_back(y);
     }
-    int maxIter = 100;
-    double cost = 0, lastCost = 0;
-    
-    for(int iter = 0; iter < maxIter; ++ iter) {
-        vector<vector<double>> H(2, vector<double>(2, 0));
-        vector<double> b(2, 0.0);
-
-        cost = 0;
-        for(int i = 0; i < N; ++ i) {
-            double xi = x_data[i];
-            double yi = y_data[i];
-            double obs = exp(ar * xi + br);
-            double error = yi - obs;
-            double J[2];
-            J[0] = -xi * obs;
-            J[1] = -obs;
-            H[0][0] += J[0] * J[0];
-            H[0][1] += J[0] * J[1];
-            H[1][0] += J[1] * J[0];
-            H[1][1] += J[1] * J[1];
-            b[0] += error * J[0];
-            b[1] += error * J[1];
-            cost += error * error;
-        }
-        vector<double> dx(2);
-        dx = solve(H, b);
-        ar += dx[0];
-        br += dx[1];
-    }
-    
+    vector<double> ans = solveGN(xd, yd);
+    cout << "GN a : " << ans[0] << " , b : " << ans[1] << endl;
+    vector<double> ans1 = solveN(xd, yd);
+     cout << "N a : " << ans1[0] << " , b : " << ans1[1] << endl;
     return 0;
 }
