@@ -11,19 +11,19 @@ class DSU
 public:
     DSU() {
         for(int i = 0; i < maxn; ++ i) fa[i] = i;
-        memset(size, 1, sizeof(size));
+        memset(sz, 1, sizeof(sz));
     }
     int find(int x) {return fa[x] == x ? x : find(fa[x]); }
     // 启发式合并
     void unite(int x, int y) {
         x = find(x), y = find(y);
         if(x == y) return;
-        if(size[x] < size[y]) swap(x, y);
-        fa[y] = x; size[x] += size[y];
+        if(sz[x] < sz[y]) swap(x, y);
+        fa[y] = x; sz[x] += sz[y];
     }
 private: 
     static const int maxn = 1e5 + 10;
-    int fa[maxn + 10], size[maxn + 10];
+    int fa[maxn + 10], sz[maxn + 10];
 };
 
 int main()

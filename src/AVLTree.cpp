@@ -9,7 +9,7 @@ using namespace std;
 删除节点复杂度为O(log n)
 */
 
-struct TreeNode
+struct TreeNode //二叉树节点
 {
     int val{};
     int height = 0;  //叶子节点高度为0，空节点高度为-1
@@ -18,13 +18,16 @@ struct TreeNode
     TreeNode() = default;
     explicit TreeNode(int x) : val(x) {}
 };
-
-
-
 class AVLTree 
 {
 public:
-    int getHeight() {return height(root); } //获取树高
+    AVLTree() {}
+    ~AVLTree() {
+        heightTree = -1;
+        size = 0;
+        destory(root);
+    }
+    int getHeight() {return height(root); } //获取当前AVL树高的高度
     int getSize() {return size;}            //获取节点数目
     bool find(int val) {                    //查询平衡二叉树中是否存在值为 val 的节点
         return findHelper(root, val);   
@@ -38,8 +41,6 @@ public:
         if(find(val)) -- size;
         root = removeHelper(root, val);
     }
-   
-    
     void print() {                          //打印平衡二叉树
         // cout << "AVL : ";
         inOrder(root);
@@ -47,19 +48,24 @@ public:
     }
     
 private:
+    /// @brief 获取节点的树高，空节点为-1，叶节点为0
     int height(TreeNode* T) {
         return T == nullptr ? -1 : T->height;
     }
+    /// @brief 更新节点的高度 
     int updateHeight(TreeNode* T) {
         T->height = max(height(T->left), height(T->right)) + 1;
     }
+    /// @brief 获取节点的平衡因子，即左子树高度减去右子树高度 
     int balanceFactor(TreeNode* T) {
         if(T == nullptr) return 0;
         return height(T->left) - height(T->right);
     }
+    /// @brief 判断当前二叉搜索树是否为平衡二叉树 
     bool isBalanceTree() {                  //判断是否为平衡二叉树
         return isBalanceTreeHelper(root);
     }
+    /// @brief 对当前节点进行右旋转 
     TreeNode* rightRotate(TreeNode* node) {
         TreeNode* child = node->left;
         TreeNode* grandChild = child->right;
@@ -69,6 +75,7 @@ private:
         updateHeight(child);
         return child;
     }
+    /// @brief 对当前节点进行左旋转 
     TreeNode* leftRotate(TreeNode* node) {
         TreeNode* child = node->right;
         TreeNode* grandChild = child->left;
@@ -78,6 +85,7 @@ private:
         updateHeight(child);
         return child;
     }
+    /// @brief 对当前AVL树进行旋转，维护平衡 
     TreeNode* rotate(TreeNode* node) {
         int balanceNode = balanceFactor(node);
         if(balanceNode > 1) {
@@ -97,6 +105,18 @@ private:
                 node->right = rightRotate(node->right);
                 return leftRotate(node);
             }
+        }
+        return node;
+    }
+    TreeNode* findMinNode(TreeNode* node) {
+        while(node->left != nullptr) {
+            node = node->left;
+        }
+        return node;
+    }
+    TreeNode* findMaxNode(TreeNode* node) {
+        while(node->right != nullptr) {
+            node = node->right;
         }
         return node;
     }
@@ -140,10 +160,11 @@ private:
                 }
             }
             else { //左右节点均非空，使用当前左子树中最大值替换当前节点
-                TreeNode* maxNode = node->left;
-                while(maxNode->right) {
-                    maxNode = maxNode->right;
-                }
+                // TreeNode* maxNode = node->left;
+                // while(maxNode->right) {
+                //     maxNode = maxNode->right;
+                // }
+                TreeNode* maxNode = findMaxNode(node->left);
                 int maxVal = maxNode->val;
                 node->left = removeHelper(node->left, maxVal);
                 node->val = maxVal;
@@ -170,6 +191,12 @@ private:
         cout << node->val << " ";
         inOrder(node->right);
     }
+    void destory(TreeNode* node) {
+        if(node == nullptr) return;
+        destory(node->left);
+        destory(node->right);
+        delete node;
+    }
     TreeNode* root{};
     int size{};
     int heightTree = {};
@@ -189,18 +216,6 @@ int main() {
         T.print();
         cout << "remove T sz : " << T.getSize() << " , hei : " << T.getHeight() << endl;
     }
-    // while(true) {
-    //     int x; cin >>x;
-    //     T.insert(x);
-    //     cout << "T is bal : " << T.isBalanceTree() << endl;
-    //     if(T.isBalanceTree()) {
-    //         cout << "YES !!!" << endl;
-    //     }
-    //     else {
-    //         cout << "No" << endl;
-    //     }
-    //     T.print();
-    // }
 
     return 0;
 }
