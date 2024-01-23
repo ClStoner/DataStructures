@@ -178,10 +178,14 @@ private:
                     node = child;
                 }
                 else {
-                    TreeNode* maxNode = findMaxNode(node->left);
-                    int maxVal = maxNode->val;
-                    node->val = maxVal; 
-                    node->left = removeHelper(node->left, maxVal);
+                    if(node->left->rank <= node->right->rank) {
+                        node = rightRotate(node);
+                        node->left = removeHelper(node->left, val);
+                    }
+                    else {
+                        node = leftRotate(node);
+                        node->right = removeHelper(node->right, val);
+                    }
                 }
             }
         }
